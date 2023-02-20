@@ -35,13 +35,16 @@ void EntryTable::add(Entry const& entry)
 	bool foundParent = false;
 	
 	for (size_t i = 0; i < this->EntryList.size(); ++i) {
+		// If EntryList[i] is the parent (folder) of `entry`
 		if (entry.hasParent(this->EntryList[i])) {
+			// Add `entry` to both its parent's EntryList and the volume's EntryList.
 			this->EntryList.push_back(this->EntryList[i]->add(entry));
 			foundParent = true;
 			return;
 		}
 	}
 
+	// If `entry` doesn't belong to any folder (i.e., it belongs to Root folder)
 	if (!foundParent) {
 		this->EntryList.push_back(this->Root->add(entry));
 	}

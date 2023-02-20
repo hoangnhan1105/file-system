@@ -15,6 +15,13 @@ Folder::~Folder()
 	this->EntryList.shrink_to_fit();
 }
 
+/*
+Convert entry to the appropriate type (Folder or File),
+create a pointer pointing to this entry,
+add the pointer to this Folder's EntryList,
+and return the pointer for further usage
+(e.g., add to Volume's EntryList).
+*/
 Entry* Folder::add(Entry const& tempEntry) {
 	Entry* entry;
 

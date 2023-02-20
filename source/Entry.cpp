@@ -71,6 +71,12 @@ bool Entry::hasName(string const& name) const
 	return name == this->Name;
 }
 
+/* 
+Check if `parent` is the parent of this entry.
+
+Args:
+	parent: The possible parent Entry.
+*/
 bool Entry::hasParent(Entry const* parent) const
 {
 	string parentPath = parent->getPath();
@@ -177,6 +183,25 @@ void Entry::seekToEndOfData_p(fstream& file) const
 	file.seekp((uint64_t)this->OffsetData + (uint64_t)this->SizeData);
 }
 
+/*
+Get info of a file in Windows (outside of a volume) from a WIN32_FIND_DATAA structure
+and assign to the current entry.
+
+The function is used solely for file import purpose.
+
+2 attributes, `Path` and `PathLen`, will contain only temporary values when the function ends.
+They'll continue to be updated during the file import process.
+
+Args:
+	ffd: The WIN32_FIND_DATAA structure containing the file's info
+	file_path: The file's full path in Windows.
+	file_name_in_volume: File name in volume. Same as original name in Windows,
+			except that if it's a folder instead, there'll be a '\\' at the tail
+			of the name.
+	insert_pos: Position in volume to insert the data of this file.
+			The variable is a reference, so that at the end of the function,
+			it'll be updated to the file end position when it's imported.
+*/
 void Entry::getFileInfoAndConvertToEntry(_WIN32_FIND_DATAA ffd,
 	string file_path, string file_name_in_volume,
 	uint64_t& insert_pos)

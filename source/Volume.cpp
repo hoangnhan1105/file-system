@@ -96,6 +96,19 @@ void Volume::importGUI(Entry* parent)
 	}
 }
 
+/* 
+Import a file/folder at `new_file_path` into `parent` folder in the volume.
+
+The process consists of 2 steps:
+	- Read, process, and store the info (metadata) of the importing file(s)
+			into the program's memory (i.e., RAM).
+	- Read the data of the importing file(s), then write all metadata and data
+			into the volume in one go.
+
+Args:
+	new_file_path: Location (path) of the file/folder to be imported in Windows
+	parent: Entry pointer to the destination folder in the volume
+*/
 bool Volume::import(string const& new_file_path, Entry* parent)
 {
 	fstream volumeStream(this->Path, ios_base::in | ios_base::out | ios_base::binary);
@@ -117,9 +130,12 @@ bool Volume::import(string const& new_file_path, Entry* parent)
 	// Each time we arrive at a file or folder in the tree,
 	// we'll get the info of that file or folder.
 
+	// File queue to be imported.
 	vector<Entry> file_entry_vector;
 
+	// Temporary entry
 	Entry file_entry;
+	// Stores information about a founded file/folder.
 	_WIN32_FIND_DATAA ffd;
 
 	// We'll use a variable to keep track of the position
@@ -158,11 +174,23 @@ bool Volume::import(string const& new_file_path, Entry* parent)
 
 	// If the importing file is actually a folder.
 	if (ffd.dwFileAttributes == FILE_ATTRIBUTE_DIRECTORY) {
+		// Folder queue for level-order traversal.
+		// Stores full path in Windows.
 		queue<string> folder_path_queue;
 
+		// Windows path of the root folder of the file hierarchy to be imported.
 		const string root_folder_path = new_file_path;
+		// Name of the root folder of the file hierarchy to be imported.
 		const string root_folder_name = ffd.cFileName;
+		// Temporary variable.
+		//
+		// Windows path of the parent folder of the current file during level-order traversal.
 		string parent_folder_path;
+		// Temporary variable.
+		//
+		// Name of importing file in volume, excluding the part containing
+		// the name of the import destination folder in volume
+		// (will be explained further in the code).
 		string file_name_in_volume;
 
 		file_name_in_volume = root_folder_name;
@@ -213,6 +241,12 @@ bool Volume::import(string const& new_file_path, Entry* parent)
 				string file_path = parent_folder_path.substr(
 					0, parent_folder_path.length() - 1) + ffd.cFileName;
 
+				// Example:
+				// root_folder_path = "D:\\FolderA"
+				// root_folder_name = "FolderA"
+				// parent_folder_path = "D:\\FolderA\\FolderB\\*"
+				// cFileName = "file.txt"
+				// -> file_name_in_volume = "FolderA\\FolderB\\file.txt"
 				file_name_in_volume =
 					parent_folder_path.substr(
 						root_folder_path.length() - root_folder_name.length(),
